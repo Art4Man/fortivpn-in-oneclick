@@ -71,7 +71,7 @@ function create_script {
         cat <<EOF > "$connect_script"
 #!/bin/bash
 
-$SECRET=SECRET
+SECRET=$SECRET
 OTP=\$(oathtool --totp --base32 \$SECRET)
 sudo openfortivpn -c /etc/openfortivpn/config --otp \$OTP
 EOF
