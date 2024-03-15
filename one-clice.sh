@@ -1,5 +1,7 @@
 #!/bin/bash
 
+dir_address=""
+
 function install_packages {
     # Install oath-toolkit and openfortivpn if not already installed
     for pkg in oathtool openfortivpn; do
@@ -12,10 +14,11 @@ function install_packages {
 
 function create_config {
     # Get the directory address from the user
-    read -p "Enter the directory address you want to creat openfortivpn: " dir_address
+    read -p "Enter the directory address you want to create openfortivpn: " dir_address
 
     # Create directory if it doesn't exist
     mkdir -p "$dir_address"
+    echo "Directory created at: $dir_address"
 
     # Create/open the config file for openfortivpn
     config_file="$dir_address/config"
@@ -51,14 +54,7 @@ function create_script {
     fi
 
     # Ask the user where they want to create the script
-    read -p "Do you want to create the script in the same directory as openfortivpn? (y/n): " same_dir
-    if [[ $same_dir == 'y' || $same_dir == 'Y' ]]; then
-        # Create the script in the same directory as openfortivpn
-        script_dir=~/.openfortivpn
-    else
-        # Get the directory address from the user
-        read -p "Enter the directory address where you want to create the script: " script_dir
-    fi
+    read -p "Enter the directory address where you want to create the script: " dir_address
 
     # Create directory if it doesn't exist
     mkdir -p "$script_dir"
@@ -67,7 +63,7 @@ function create_script {
     connect_script="$script_dir/connect.sh"
     if [ ! -f "$connect_script" ]; then
         echo "Creating new connect.sh script: $connect_script"
-        read -s -p "Enter your secret: " SECRET
+        read -p "Enter your secret: " SECRET
         cat <<EOF > "$connect_script"
 #!/bin/bash
 
@@ -76,7 +72,7 @@ OTP=\$(oathtool --totp --base32 \$SECRET)
 sudo openfortivpn -c /etc/openfortivpn/config --otp \$OTP
 EOF
         chmod +x "$connect_script"
-        echo "connect.sh script created successfully! For connecting to your vpn you can now run this command: sudo bash $connect_script"
+        echo "connect.sh script created successfully at: $connect_script"
     else
         echo "connect.sh script already exists at: $connect_script"
     fi
@@ -84,7 +80,7 @@ EOF
 
 function remove_script {
     # Remove the connect.sh script
-    connect_script=~/.openfortivpn/connect.sh
+    connect_script="$dir_address/connect.sh"
     if [ -f "$connect_script" ]; then
         rm "$connect_script"
         echo "connect.sh script removed successfully!"
@@ -96,13 +92,13 @@ function remove_script {
 }
 
 function remove_dir {
-    # Remove the ~/.openfortivpn directory
-    if [ -d ~/.openfortivpn ]; then
-        rm -r ~/.openfortivpn
-        echo "~/.openfortivpn directory removed successfully!"
+    # Remove the directory
+    if [ -d "$dir_address" ]; then
+        rm -r "$dir_address"
+        echo "$dir_address directory removed successfully!"
     else
-        echo "Error: ~/.openfortivpn directory does not exist."
-        echo "Please create the ~/.openfortivpn directory first."
+        echo "Error: $dir_address directory does not exist."
+        echo "Please create the $dir_address directory first."
         return 1
     fi
 }
