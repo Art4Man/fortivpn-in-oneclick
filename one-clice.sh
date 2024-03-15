@@ -23,8 +23,10 @@ function create_config {
         echo "Creating new config file: $config_file"
         read -p "Enter your username: " username
         read -s -p "Enter your password: " password
-        echo -e "\nhost = site1.snapp.cab" > "$config_file"
-        echo "port = 43443" >> "$config_file"
+        read -p "Enter your host: " host
+        read -p "Enter your port: " port
+        echo -e "\nhost = $host" > "$config_file"
+        echo "port = $port" >> "$config_file"
         echo "username = $username" >> "$config_file"
         echo "password = $password" >> "$config_file"
         echo "set-dns = 0" >> "$config_file"
@@ -65,10 +67,11 @@ function create_script {
     connect_script="$script_dir/connect.sh"
     if [ ! -f "$connect_script" ]; then
         echo "Creating new connect.sh script: $connect_script"
+        read -s -p "Enter your secret: " SECRET
         cat <<EOF > "$connect_script"
 #!/bin/bash
 
-SECRET=YOUR_SECRET
+$SECRET=SECRET
 OTP=\$(oathtool --totp --base32 \$SECRET)
 sudo openfortivpn -c /etc/openfortivpn/config --otp \$OTP
 EOF
