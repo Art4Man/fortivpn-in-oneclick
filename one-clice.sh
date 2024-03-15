@@ -9,7 +9,7 @@ function install_packages {
         fi
     done
 }
-test
+
 dir_address=""
 
 function create_script {
