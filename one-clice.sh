@@ -12,13 +12,28 @@ function install_packages {
 
 dir_address=""
 
-function create_config {
-    # Get the directory address from the user
-    read -p "Enter the directory address you want to create openfortivpn: " dir_address
+function create_script {
+    # Check if the config file exists
+    config_file=~/.openfortivpn/config
+    if [ ! -f "$config_file" ]; then
+        echo "Warning: Config file does not exist at: $config_file"
+        read -p "Do you want to create the config file in a new directory? (y/n): " create_config
+        if [[ $create_config == 'y' || $create_config == 'Y' ]]; then
+            create_config
+        else
+            echo "Continuing without creating config file..."
+        fi
+    fi
+
+    # Ask the user where they want to create the script
+    read -p "Enter the directory address where you want to create the script: " dir_address
 
     # Create directory if it doesn't exist
     mkdir -p "$dir_address"
-    echo "Directory created at: $dir_address"
+    if [ ! -d "$dir_address" ]; then
+        echo "Error: Failed to create directory at: $dir_address"
+        return 1
+    fi
 
     # Create/open the config file for openfortivpn
     config_file="$dir_address/config"
@@ -57,10 +72,14 @@ function create_script {
     read -p "Enter the directory address where you want to create the script: " dir_address
 
     # Create directory if it doesn't exist
-    mkdir -p "$script_dir"
+    mkdir -p "$dir_address"
+    if [ ! -d "$dir_address" ]; then
+        echo "Error: Failed to create directory at: $dir_address"
+        return 1
+    fi
 
     # Create the connect.sh script
-    connect_script="$script_dir/connect.sh"
+    connect_script="$dir_address/connect.sh"
     if [ ! -f "$connect_script" ]; then
         echo "Creating new connect.sh script: $connect_script"
         read -p "Enter your secret: " SECRET
