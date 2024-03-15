@@ -1,7 +1,5 @@
 #!/bin/bash
 
-dir_address=""
-
 function install_packages {
     # Install oath-toolkit and openfortivpn if not already installed
     for pkg in oathtool openfortivpn; do
@@ -11,6 +9,8 @@ function install_packages {
         fi
     done
 }
+
+dir_address=""
 
 function create_config {
     # Get the directory address from the user
