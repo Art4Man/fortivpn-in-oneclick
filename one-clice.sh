@@ -2,6 +2,18 @@
 
 function install_packages {
     # Install oath-toolkit and openfortivpn if not already installed
+    # before installing the packages check what type os user is using
+    # if user is using ubuntu based os then isntall the packages using apt-get
+    # if user is using mac based os then install the packages using brew
+    # if user is using any other os then install the packages using the package manager of that os
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        install_ubuntu_packages
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        install_mac_packages
+    else
+        echo "Error: Unsupported OS type: $OSTYPE"
+        echo "Please install the packages manually."
+    fi
     for pkg in oathtool openfortivpn; do
         if ! command -v $pkg &> /dev/null; then
             echo "Installing $pkg..."
@@ -12,21 +24,9 @@ function install_packages {
 
 dir_address=""
 
-function create_script {
-    # Check if the config file exists
-    config_file=~/.openfortivpn/config
-    if [ ! -f "$config_file" ]; then
-        echo "Warning: Config file does not exist at: $config_file"
-        read -p "Do you want to create the config file in a new directory? (y/n): " create_config
-        if [[ $create_config == 'y' || $create_config == 'Y' ]]; then
-            create_config
-        else
-            echo "Continuing without creating config file..."
-        fi
-    fi
-
-    # Ask the user where they want to create the script
-    read -p "Enter the directory address where you want to create the script: " dir_address
+function create_config {
+    # Get the directory address from the user
+    read -p "Enter the directory address you want to create openfortivpn: " dir_address
 
     # Create directory if it doesn't exist
     mkdir -p "$dir_address"
@@ -34,6 +34,7 @@ function create_script {
         echo "Error: Failed to create directory at: $dir_address"
         return 1
     fi
+    echo "Directory created at: $dir_address"
 
     # Create/open the config file for openfortivpn
     config_file="$dir_address/config"
@@ -97,6 +98,12 @@ EOF
     fi
 }
 
+function alias {
+    # create alias in the bashrc file so uesr can connect using the vpn-forti command
+    echo "alias vpn-forti='$dir_address/connect.sh'" >> ~/.bashrc
+    echo "alias vpn-forti='$dir_address/connect.sh'" >> ~/.zshrc
+}
+
 function remove_script {
     # Remove the connect.sh script
     connect_script="$dir_address/connect.sh"
@@ -124,6 +131,7 @@ function remove_dir {
 
 function remove_script_and_dir {
     PS3='Please enter your choice: '
+    echo $PS3
     options=("Remove Script" "Remove Directory" "Remove Both" "Back")
     select opt in "${options[@]}"
     do
@@ -171,6 +179,7 @@ function edit_script {
 
 function create_config_menu {
     PS3='Please enter your choice: '
+    echo $PS3
     options=("Create directory and config file for openfortivpn" "Create Automating-Script for Openfortivpn and OATH-Tool" "Back")
     select opt in "${options[@]}"
     do
@@ -191,6 +200,7 @@ function create_config_menu {
 
 function edit_configs_menu {
     PS3='Please enter your choice: '
+    echo $PS3
     options=("Edit Config file openfortivpn" "Edit connect.sh script" "Back")
     select opt in "${options[@]}"
     do
@@ -210,6 +220,7 @@ function edit_configs_menu {
 }
 
 PS3='Please enter your choice: '
+echo $PS3
 options=("Install Packages" "Create config file openfortivpn or automating-script" "Remove Automating-Script and Directorys" "Edit either the openfortivpn config file or the connect.sh script" "Quit")
 select opt in "${options[@]}"
 do
@@ -229,6 +240,6 @@ do
         "Quit")
             break
             ;;
-        *) echo "Invalid option $REPLY";;
+        *) echo "Invalid option $REPLY. Please enter a valid option."; continue;;
     esac
 done
